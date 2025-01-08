@@ -54,14 +54,28 @@ def binary_to_text(binary):
 
 # Embed binary data into image using LSB
 def embed_data(image, binary_data):
-    img = np.array(image)
+    # Convert to numpy array and ensure uint8 type
+    img = np.array(image, dtype=np.uint8)
     flat_img = img.flatten()
+    
     if len(binary_data) > len(flat_img):
         raise ValueError("Data terlalu besar untuk disembunyikan dalam gambar.")
+    
+    # Create a copy to avoid modifying original array
+    embedded = flat_img.copy()
+    
     for i in range(len(binary_data)):
-        flat_img[i] = (flat_img[i] & ~1) | int(binary_data[i])
-    embedded_img = flat_img.reshape(img.shape)
-    return Image.fromarray(embedded_img.astype('uint8'))
+        # Clear the LSB and set it to the message bit
+        # Use bitwise operations to ensure values stay within bounds
+        embedded[i] = (embedded[i] & 0xFE) | (int(binary_data[i]) & 0x01)
+    
+    # Reshape back to original dimensions
+    embedded_img = embedded.reshape(img.shape)
+    
+    # Ensure output is uint8 and properly bounded
+    embedded_img = np.clip(embedded_img, 0, 255).astype(np.uint8)
+    
+    return Image.fromarray(embedded_img)
 
 # Extract binary data from image using LSB
 def extract_data(image, num_bits):
@@ -167,14 +181,35 @@ def main():
                         if end != -1:
                             decrypted_message = decrypted_text[start:end]
                             st.markdown(
-                                f"""
-                                <div style="border:2px solid #4CAF50;padding:10px;border-radius:10px;background-color:#f9f9f9;text-align:center;">
-                                    <h3 style="color:#4CAF50;">Dekripsi Berhasil!</h3>
-                                    <p><strong>Pesan:</strong> {decrypted_message}</p>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
+    f"""
+    <style>
+    .decrypted-message {{
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #4CAF50;
+        margin: 10px 0;
+    }}
+    
+    /* For dark theme */
+    [data-theme="dark"] .decrypted-message {{
+        background-color: rgba(38, 39, 48, 0.9);
+        color: white;
+    }}
+    
+    /* For light theme */
+    [data-theme="light"] .decrypted-message {{
+        background-color: rgba(255, 255, 255, 0.9);
+        color: black;
+    }}
+    </style>
+    
+    <div class="decrypted-message" style="text-align: center;">
+        <h3 style="color:#4CAF50;">Dekripsi Berhasil!</h3>
+        <p style="font-size: 16px;"><strong>Pesan:</strong> {decrypted_message}</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
                         else:
                             st.error("Key salah atau gambar tidak berisi pesan yang dienkripsi.")
                     else:
