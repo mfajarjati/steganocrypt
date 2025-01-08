@@ -73,7 +73,7 @@ def extract_data(image, num_bits):
 # Streamlit App
 def main():
     # Informasi kelompok
-    st.sidebar.markdown("## Kelompok 1")
+    st.sidebar.markdown("## Kelompok 4")
 
     st.title("🔒 Enkripsi & Dekripsi Gambar dengan Caesar Cipher dan Steganografi")
 
