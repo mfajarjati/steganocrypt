@@ -5,7 +5,7 @@ import io
 
 # Konfigurasi halaman
 st.set_page_config(
-    page_title="Kelompok 1: Enkripsi & Dekripsi Gambar",
+    page_title="Kelompok 4: Enkripsi & Dekripsi Gambar",
     page_icon="🔒",
     layout="wide"
 )
@@ -202,7 +202,7 @@ def main():
         }
         </style>
         <div class="footer">
-            Dibuat dengan ❤️ oleh Kelompok 1 TEKKOM UPI
+            Dibuat dengan ❤️ oleh Kelompok 4 TEKKOM UPI
         </div>
         """,
         unsafe_allow_html=True
