@@ -2,6 +2,8 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import io
+import math
+from skimage.metrics import mean_squared_error, peak_signal_noise_ratio
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -12,6 +14,35 @@ st.set_page_config(
 
 # Dvorak layout
 DVO_LAYOUT = list("PYFGCRLAOEUIDHTNSQJKXBMWVZ")
+
+# calculate_mse and calculate_psnr functions
+def calculate_mse(original_image, modified_image):
+    # Convert PIL images to numpy arrays
+    img1 = np.array(original_image)
+    img2 = np.array(modified_image)
+    
+    # Ensure both are float32/float64 for precise calculation
+    img1 = img1.astype(np.float64)
+    img2 = img2.astype(np.float64)
+    
+    # Calculate MSE
+    mse = np.mean(np.square(img1 - img2))
+    
+    # Debug prints
+    print(f"Original image range: {img1.min()} to {img1.max()}")
+    print(f"Modified image range: {img2.min()} to {img2.max()}")
+    print(f"Difference range: {(img1 - img2).min()} to {(img1 - img2).max()}")
+    print(f"Raw MSE value: {mse}")
+    
+    return mse
+
+def calculate_psnr(original_image, modified_image):
+    mse = calculate_mse(original_image, modified_image)
+    if mse == 0:
+        return float('inf')
+    max_pixel = 255.0
+    return 20 * np.log10(max_pixel / np.sqrt(mse))
+
 
 # Encrypt
 def encrypt_message(message, key):
@@ -135,6 +166,32 @@ def main():
                         encrypted_final_message = encrypt_message(final_plaintext, key)
                         binary_data = text_to_binary(encrypted_final_message)
                         embedded_image = embed_data(image, binary_data)
+                        
+                         # Calculate MSE and PSNR
+                        mse_value = calculate_mse(image, embedded_image)
+                        psnr_value = calculate_psnr(image, embedded_image)
+
+                        # Display metrics
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.metric(
+                                label="Mean Square Error (MSE)", 
+                                value=f"{mse_value:.10f}"
+                            )
+                        with col2:
+                            st.metric(
+                                label="Peak Signal-to-Noise Ratio (PSNR)", 
+                                value=f"{psnr_value:.2f} dB"
+                            )
+
+                        # Add metrics info
+                        st.info("""
+                            💡 Interpretasi Metrik:
+                            - MSE lebih rendah = Distorsi lebih kecil
+                            - PSNR lebih tinggi = Kualitas gambar lebih baik
+                            - PSNR > 30dB umumnya dianggap berkualitas baik
+                        """)
+
 
                         buf = io.BytesIO()
                         embedded_image.save(buf, format='PNG')
