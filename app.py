@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 import io
 import math
-from skimage.metrics import mean_squared_error, peak_signal_noise_ratio
+from skimage.metrics import mean_squared_error, peak_signal_noise_ratio 
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -15,7 +15,7 @@ st.set_page_config(
 # Dvorak layout
 DVO_LAYOUT = list("PYFGCRLAOEUIDHTNSQJKXBMWVZ")
 
-# calculate_mse and calculate_psnr functions
+# calculate_mse functions
 def calculate_mse(original_image, modified_image):
     # Convert PIL images to numpy arrays
     img1 = np.array(original_image)
@@ -36,13 +36,13 @@ def calculate_mse(original_image, modified_image):
     
     return mse
 
+# calculate_psnr functions
 def calculate_psnr(original_image, modified_image):
     mse = calculate_mse(original_image, modified_image)
     if mse == 0:
         return float('inf')
     max_pixel = 255.0
     return 20 * np.log10(max_pixel / np.sqrt(mse))
-
 
 # Encrypt
 def encrypt_message(message, key):
@@ -167,42 +167,44 @@ def main():
                         binary_data = text_to_binary(encrypted_final_message)
                         embedded_image = embed_data(image, binary_data)
                         
-                         # Calculate MSE and PSNR
-                        mse_value = calculate_mse(image, embedded_image)
-                        psnr_value = calculate_psnr(image, embedded_image)
-
-                        # Display metrics
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.metric(
-                                label="Mean Square Error (MSE)", 
-                                value=f"{mse_value:.10f}"
-                            )
-                        with col2:
-                            st.metric(
-                                label="Peak Signal-to-Noise Ratio (PSNR)", 
-                                value=f"{psnr_value:.2f} dB"
-                            )
-
-                        # Add metrics info
-                        st.info("""
-                            💡 Interpretasi Metrik:
-                            - MSE lebih rendah = Distorsi lebih kecil
-                            - PSNR lebih tinggi = Kualitas gambar lebih baik
-                            - PSNR > 30dB umumnya dianggap berkualitas baik
-                        """)
-
+                        st.success("Pesan berhasil dienkripsi dan disembunyikan dalam gambar!")
 
                         buf = io.BytesIO()
                         embedded_image.save(buf, format='PNG')
                         byte_im = buf.getvalue()
+                        st.markdown('<style>div.stDownloadButton {margin-bottom: 40px;}</style>', unsafe_allow_html=True)
                         st.download_button(
-                            label="Unduh Gambar Terenkripsi",
-                            data=byte_im,
-                            file_name="encrypted_image.png",
-                            mime="image/png"
-                        )
-                        st.success("Pesan berhasil dienkripsi dan disembunyikan dalam gambar!")
+                        label="Unduh Gambar Terenkripsi",
+                        data=byte_im,
+                        file_name="encrypted_image.png",
+                        mime="image/png"
+                            )
+                        with st.expander("Lihat Detail Metrik Kualitas Gambar"):
+                            # Calculate MSE and PSNR
+                            mse_value = calculate_mse(image, embedded_image)
+                            psnr_value = calculate_psnr(image, embedded_image)
+
+                            # Display metrics
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric(
+                                    label="Mean Square Error (MSE)", 
+                                    value=f"{mse_value:.10f}"
+                                )
+                            with col2:
+                                st.metric(
+                                    label="Peak Signal-to-Noise Ratio (PSNR)", 
+                                    value=f"{psnr_value:.2f} dB"
+                                )
+
+                            # Add metrics info
+                            st.info("""
+                                💡 Interpretasi Metrik:
+                                - MSE lebih rendah = Distorsi lebih kecil
+                                - PSNR lebih tinggi = Kualitas gambar lebih baik
+                                - PSNR > 30dB umumnya dianggap berkualitas baik
+                            """)
+
                     except Exception as e:
                         st.error(f"Terjadi kesalahan: {e}")
 
@@ -238,35 +240,35 @@ def main():
                         if end != -1:
                             decrypted_message = decrypted_text[start:end]
                             st.markdown(
-    f"""
-    <style>
-    .decrypted-message {{
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid #4CAF50;
-        margin: 10px 0;
-    }}
-    
-    /* For dark theme */
-    [data-theme="dark"] .decrypted-message {{
-        background-color: rgba(38, 39, 48, 0.9);
-        color: white;
-    }}
-    
-    /* For light theme */
-    [data-theme="light"] .decrypted-message {{
-        background-color: rgba(255, 255, 255, 0.9);
-        color: black;
-    }}
-    </style>
-    
-    <div class="decrypted-message" style="text-align: center;">
-        <h3 style="color:#4CAF50;">Dekripsi Berhasil!</h3>
-        <p style="font-size: 16px;"><strong>Pesan:</strong> {decrypted_message}</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+                                f"""
+                                <style>
+                                .decrypted-message {{
+                                    padding: 15px;
+                                    border-radius: 10px;
+                                    border: 2px solid #4CAF50;
+                                    margin: 10px 0;
+                                }}
+                                
+                                /* For dark theme */
+                                [data-theme="dark"] .decrypted-message {{
+                                    background-color: rgba(38, 39, 48, 0.9);
+                                    color: white;
+                                }}
+                                
+                                /* For light theme */
+                                [data-theme="light"] .decrypted-message {{
+                                    background-color: rgba(255, 255, 255, 0.9);
+                                    color: black;
+                                }}
+                                </style>
+                                
+                                <div class="decrypted-message" style="text-align: center;">
+                                    <h3 style="color:#4CAF50;">Dekripsi Berhasil!</h3>
+                                    <p style="font-size: 16px;"><strong>Pesan:</strong> {decrypted_message}</p>
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
                         else:
                             st.error("Key salah atau gambar tidak berisi pesan yang dienkripsi.")
                     else:
