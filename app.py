@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import io
-import math
+import math 
 from skimage.metrics import mean_squared_error, peak_signal_noise_ratio 
 
 # Konfigurasi halaman
@@ -88,8 +88,10 @@ def binary_to_text(binary):
     chars = [binary[i:i+8] for i in range(0, len(binary), 8)]
     try:
         text = ''.join([chr(int(c, 2)) for c in chars])
+        print(f"Extracted text: {text}")  # Debug
         return text
     except:
+        print("Error converting binary to text")  # Debug
         return ""
 
 # Embed binary data into image using LSB
@@ -122,6 +124,7 @@ def extract_data(image, num_bits):
     img = np.array(image)
     flat_img = img.flatten()
     binary_data = ''.join([str(pixel & 1) for pixel in flat_img[:num_bits]])
+    print(f"Extracted binary length: {len(binary_data)}")  # Debug
     return binary_data
 
 # Streamlit App
@@ -228,7 +231,7 @@ def main():
         uploaded_file = st.file_uploader("Unggah Gambar", type=["png", "jpg", "jpeg"], key="dekripsi_file")
         if uploaded_file:
             st.session_state.uploaded_file = uploaded_file
-            image = Image.open(uploaded_file).convert("L")  # Convert to grayscale
+            image = Image.open(uploaded_file)  # Convert to grayscale
             st.image(image, caption='Gambar Terenkripsi', use_container_width=True)
 
             # Input key
@@ -237,7 +240,7 @@ def main():
 
             if st.button("Dekripsi"):
                 try:
-                    max_message_length = 100
+                    max_message_length = 1000  # Increased from 100
                     header = "MSG:"
                     delimiter = "#####"
                     total_chars = len(header) + max_message_length + len(delimiter)
