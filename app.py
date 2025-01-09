@@ -57,6 +57,15 @@ def encrypt_message(message, key):
             encrypted.append(char)
     return ''.join(encrypted)
 
+def is_grayscale(image):
+    img_array = np.array(image)
+    if len(img_array.shape) == 2:
+        return True
+    if len(img_array.shape) == 3:
+        r, g, b = img_array[:,:,0], img_array[:,:,1], img_array[:,:,2]
+        return np.array_equal(r, g) and np.array_equal(g, b)
+    return False
+
 # Decrypt
 def decrypt_message(message, key):
     decrypted = []
@@ -144,8 +153,12 @@ def main():
         uploaded_file = st.file_uploader("Unggah Gambar", type=["png", "jpg", "jpeg"], key="enkripsi_file")
         if uploaded_file:
             st.session_state.uploaded_file = uploaded_file
-            image = Image.open(uploaded_file).convert("L")  # Convert to grayscale
+            image = Image.open(uploaded_file) # Convert to grayscale
             st.image(image, caption='Gambar Grayscale', use_container_width=True)
+            
+            if not is_grayscale(image):
+                st.error("Mohon upload gambar grayscale! Gambar berwarna tidak dapat diproses.")
+                st.stop()
 
             # Input key
             key = st.number_input("Masukkan Key", value=3, step=1, key="enkripsi_key")
