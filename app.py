@@ -2,8 +2,6 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import io
-import math 
-from skimage.metrics import mean_squared_error, peak_signal_noise_ratio 
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -14,6 +12,17 @@ st.set_page_config(
 
 # Dvorak layout
 DVO_LAYOUT = list("PYFGCRLAOEUIDHTNSQJKXBMWVZ")
+ALLOWED_CHARS = set(DVO_LAYOUT) 
+
+# validation function
+def validate_message(message):
+    if not message:
+        return False, "Pesan tidak boleh kosong!"
+    
+    invalid_chars = [c for c in message.upper() if not c.isalpha()]
+    if invalid_chars:
+        return False, f"Error: Karakter tidak valid! Hanya huruf alfabet yang diperbolehkan.\nKarakter yang tidak valid: {', '.join(set(invalid_chars))}"
+    return True, ""
 
 # calculate_mse functions
 def calculate_mse(original_image, modified_image):
@@ -27,12 +36,6 @@ def calculate_mse(original_image, modified_image):
     
     # Calculate MSE
     mse = np.mean(np.square(img1 - img2))
-    
-    # Debug prints
-    print(f"Original image range: {img1.min()} to {img1.max()}")
-    print(f"Modified image range: {img2.min()} to {img2.max()}")
-    print(f"Difference range: {(img1 - img2).min()} to {(img1 - img2).max()}")
-    print(f"Raw MSE value: {mse}")
     
     return mse
 
@@ -171,8 +174,10 @@ def main():
             message = st.text_input("Masukkan Pesan yang Ingin disisipkan")
 
             if st.button("Enkripsi"):
-                if message.strip() == "":
-                    st.error("Pesan tidak boleh kosong!")
+                is_valid, error_msg = validate_message(message)
+                if not is_valid:
+                    # st.error(error_msg)
+                    st.warning("⚠️ Hanya huruf alfabet (A-Z) yang diperbolehkan!")
                 else:
                     try:
                         header = "MSG:"
@@ -245,6 +250,7 @@ def main():
                     delimiter = "#####"
                     total_chars = len(header) + max_message_length + len(delimiter)
                     num_bits = 8 * total_chars
+
 
                     binary_data = extract_data(image, num_bits)
                     extracted_encrypted_text = binary_to_text(binary_data)
